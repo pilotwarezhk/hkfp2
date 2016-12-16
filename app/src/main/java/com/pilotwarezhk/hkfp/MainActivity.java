@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.htmlcleaner.CleanerProperties;
@@ -29,17 +30,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
+    ListView listView;
+    ListViewAdapter adapter;
+    ArrayList<HashMap<String, String>> arraylist;
+    static String TITLE = "title";
+    static String PUBDATE = "pubdate";
+    static String CATEGORY = "category";
     static final String url = "https://www.hongkongfp.com/category/topics/";
-    static final String XPATH_STATS = "//head/title";
     ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        new JsoupListView().execute();
 
         Button btnTitle = (Button) findViewById(R.id.btnTitle);
         Button btnDesc  = (Button) findViewById(R.id.btnDesc);
@@ -65,6 +74,52 @@ public class MainActivity extends AppCompatActivity {
                 new Logo().execute();
             }
         });
+    }
+
+    private class JsoupListView extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog = new ProgressDialog(MainActivity.this);
+            mProgressDialog.setTitle("Hong Kong Free Press");
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setIndeterminate(false);
+            mProgressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            arraylist = new ArrayList<HashMap<String, String>>();
+
+            try {
+                Document doc = Jsoup.connect(url).get();
+
+                for (Element article : doc.select("article")) {
+                    HashMap<String, String> map = new HashMap<String, String>();
+
+                    String title = article.select("h2 a").text();
+                    Elements imgSrc = article.select("div[class=meta-image] img[src]");
+                    String imgSrcStr = imgSrc.attr("src");
+
+                    map.put("title", title);
+                    map.put("img", imgSrcStr);
+
+                    arraylist.add(map);
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            listview = (ListView) findViewById(R.id.listview);
+            adapter = new ListViewAdapter(MainActivity.this, arraylist);
+            listView.setAdapter(adapter);
+            mProgressDialog.dismiss();
+        }
     }
 
     private class Title extends AsyncTask<Void, Void, Void> {
