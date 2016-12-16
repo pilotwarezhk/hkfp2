@@ -12,10 +12,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.CommentNode;
 import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.HtmlNode;
+import org.htmlcleaner.SimpleHtmlSerializer;
 import org.htmlcleaner.TagNode;
+import org.htmlcleaner.TagNodeVisitor;
+
+import org.htmlcleaner.Utils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -25,7 +32,7 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    static final String url = "https://www.hongkongfp.com/";
+    static final String url = "https://www.hongkongfp.com/category/topics/";
     static final String XPATH_STATS = "//head/title";
     ProgressDialog mProgressDialog;
 
@@ -122,11 +129,28 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
+
             try {
+                String titleText = "";
+                Document document = Jsoup.connect(url).get();
+                Element content = document.getElementById("primary");
+                Elements articles = content.getElementsByTag("article");
+                for (Element article : articles) {
+                    Elements headers = article.getElementsByTag("header");
+                    for (Element header : headers) {
+                        Elements titles = header.getElementsByTag("a");
+                        for (Element title : titles) {
+                            titleText = title.text();
+                        }
+                    }
+                }
+                desc = titleText;
+                /*
                 Document document = Jsoup.connect(url).get();
                 Elements description = document.select("meta[name=description]");
                 desc = description.attr("content");
-            } catch (IOException e) {
+                */
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
