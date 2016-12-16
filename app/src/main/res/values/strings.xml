@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">HKFP</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello World!</string>
+    <string name="Title">Website Title</string>
+    <string name="Description">Website Description</string>
+    <string name="Logo">Website Logo</string>
+</resources>
